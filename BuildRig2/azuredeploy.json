@@ -36,6 +36,18 @@
         "2012-R2-Datacenter",
         "Windows-Server-Technical-Preview"
       ]
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Auto-generated token to access _artifactsLocation"
+      }
     }
   },
   "variables": {
@@ -53,7 +65,9 @@
     "virtualmachineVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'VirtualNetwork')]",
     "virtualmachineSubnetRef": "[concat(variables('virtualmachineVnetID'), '/subnets/', variables('VirtualNetworkSubnet1Name'))]",
     "virtualmachineStorageAccountContainerName": "vhds",
-    "virtualmachineNicName": "[concat(parameters('virtualmachineName'), 'NetworkInterface')]"
+    "virtualmachineNicName": "[concat(parameters('virtualmachineName'), 'NetworkInterface')]",
+    "CustomScriptExtensionScriptFolder": "CustomScripts",
+    "CustomScriptExtensionScriptFileName": "CustomScriptExtension.ps1"
   },
   "resources": [
     {
@@ -182,7 +196,33 @@
             }
           ]
         }
-      }
+      },
+      "resources": [
+        {
+          "name": "CustomScriptExtension",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2016-03-30",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualmachineName'))]"
+          ],
+          "tags": {
+            "displayName": "CustomScriptExtension"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.4",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": [
+                "[concat(parameters('_artifactsLocation'), '/', variables('CustomScriptExtensionScriptFolder'), '/', variables('CustomScriptExtensionScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+              ],
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('CustomScriptExtensionScriptFolder'), '/', variables('CustomScriptExtensionScriptFileName'))]"
+            }
+          }
+        }
+      ]
     }],
   "outputs": {}
 }
