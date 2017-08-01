@@ -8,11 +8,11 @@
     "virtualmachineAdminUserName": {
       "value": "newtonsheikh"
     },
-    "virtualmachineAdminPassword": {
-      "value": ""
-    },
     "sizeOfEachDataDiskInGB": {
       "value": "100"
+    },
+    "publicipDnsName": {
+      "value": "buidrigpublicip"
     }
   }
 }
